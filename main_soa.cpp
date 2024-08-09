@@ -49,17 +49,29 @@ int main( int argc, char* argv[] )
   {
 
   // Allocate y, x vectors and Matrix A on device.
-  typedef Kokkos::View<Particle*>   ViewVectorType;
+  typedef Kokkos::View<double*>   ViewVectorType;
   //ViewVectorType y( "y", N );
   //ViewVectorType x( "x", M );
   //ViewMatrixType A( "A", N, M );
-  ViewVectorType p("p", N);
+  ViewVectorType x("x", N);
+  ViewVectorType y("y", N);  
+  ViewVectorType vx("vx", N);
+  ViewVectorType vy("vy", N);
+  ViewVectorType mass("mass", N);  
+
 
   // Create host mirrors of device views.
 //  ViewVectorType::HostMirror h_y = Kokkos::create_mirror_view( y );
 //  ViewVectorType::HostMirror h_x = Kokkos::create_mirror_view( x );
 //  ViewMatrixType::HostMirror h_A = Kokkos::create_mirror_view( A );
-    ViewVectorType::HostMirror h_p = Kokkos::create_mirror_view( p ) ;
+    ViewVectorType::HostMirror h_x = Kokkos::create_mirror_view( x ) ;
+    ViewVectorType::HostMirror h_y = Kokkos::create_mirror_view( y ) ;
+    ViewVectorType::HostMirror h_vx = Kokkos::create_mirror_view( vx ) ;
+    ViewVectorType::HostMirror h_vy = Kokkos::create_mirror_view( vy ) ;
+    ViewVectorType::HostMirror h_mass = Kokkos::create_mirror_view( mass ) ;
+
+
+
 
   // Initialize y vector on host.
 //  for ( int i = 0; i < N; ++i ) {
@@ -80,18 +92,23 @@ int main( int argc, char* argv[] )
 //
 
   for (int i = 0 ; i < N ; i++){
-	h_p(i).x = rand() / (double)RAND_MAX;
-	h_p(i).y = rand() / (double)RAND_MAX;
-	h_p(i).vx = 0.0 ;
-	h_p(i).vy = 0.0 ; 
-	h_p(i).mass = 1.0;
+	x(i) = rand() / (double)RAND_MAX;
+	y(i) = rand() / (double)RAND_MAX;
+	vx(i) = 0.0 ;
+	vy(i) = 0.0 ; 
+	mass(i) = 1.0;
   }
 
   // Deep copy host views to device views.
 //  Kokkos::deep_copy( y, h_y );
 //  Kokkos::deep_copy( x, h_x );
 //  Kokkos::deep_copy( A, h_A );
-    Kokkos::deep_copy(p, h_p);
+    Kokkos::deep_copy(x, h_x);
+    Kokkos::deep_copy(y, h_y);
+    Kokkos::deep_copy(vx, h_vx);
+    Kokkos::deep_copy(vy, h_vy);
+    Kokkos::deep_copy(mass, h_mass);
+
 
   // Timer products.
   Kokkos::Timer timer;
@@ -113,19 +130,19 @@ int main( int argc, char* argv[] )
       double dx , dy ; 
       double dist, dist3, force;
       for (int j = 0 ; j < N ; j++){
-	dx = p(j).x - p(i).x ;
-	dy = p(j).y - p(i).y ; 
+	dx = x(j) - x(i) ;
+	dy = y(j) - y(i) ; 
 	dist = sqrt(dx*dx + dy*dy);
 	dist3 = dist * dist * dist;
-	force = G * p(i).mass * p(j).mass / dist3 ; 
+	force = G * mass(i) * mass(j) / dist3 ; 
 	fx += force * dx ; 
 	fy += force * dy ;
       }
       // integration 
-      p(i).vx += dt * fx / p(i).mass ; 
-      p(i).vy += dt * fy / p(i).mass ;
-      p(i).x += p(i).vy * dt ; 
-      p(i).y += p(i).vy * dt ;
+      vx(i) += dt * fx / mass(i) ; 
+      vy(i) += dt * fy / mass(i) ;
+      x(i) += vy(i) * dt ; 
+      y(i) += vy(i) * dt ;
     });
 
   }
