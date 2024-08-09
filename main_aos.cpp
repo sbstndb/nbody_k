@@ -78,14 +78,13 @@ int main( int argc, char* argv[] )
 //    }
 //  }
 //
-
-  for (int i = 0 ; i < N ; i++){
+  Kokkos::parallel_for("init", N, KOKKOS_LAMBDA (int i){
 	h_p(i).x = rand() / (double)RAND_MAX;
 	h_p(i).y = rand() / (double)RAND_MAX;
 	h_p(i).vx = 0.0 ;
 	h_p(i).vy = 0.0 ; 
 	h_p(i).mass = 1.0;
-  }
+  });
 
   // Deep copy host views to device views.
 //  Kokkos::deep_copy( y, h_y );
