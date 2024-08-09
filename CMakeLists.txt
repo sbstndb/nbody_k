@@ -22,6 +22,8 @@ endif()
 
 
 
-add_executable(NBody main.cpp)
-target_link_libraries(NBody Kokkos::kokkos)
+add_executable(NBodyAOS main_aos.cpp)
+add_executable(NBodySOA main_soa.cpp)
+target_link_libraries(NBodyAOS Kokkos::kokkos)
+target_link_libraries(NBodySOA Kokkos::kokkos)
 
