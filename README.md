@@ -8,6 +8,9 @@ From the [Kokkos](https://github.com/kokkos) github repo :
 Thanks to Kokkos, you can compile this code for multiple backends like OpenMP, CUDA, HIP. 
 
 
+**Disclaimer:** Please note that this project is a work in progress and may contain errors or programming oversights due to its experimental nature. Your understanding and feedback are appreciated as we continue to develop and refine this code.
+
+
 # Prerequisites
 The code use Kokkos as a performance portability library. Then, you must have it to compile the project.
 I suggest you to install it and read the documentation for further understanding. 
