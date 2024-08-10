@@ -147,6 +147,7 @@ int main( int argc, char* argv[] )
   }
 
   // Calculate time.
+  Kokkos::fence();
   double time = timer.seconds();
   std::cout << "Elapsed time : " << time << std::endl ; 
   }
