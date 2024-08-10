@@ -15,28 +15,34 @@
 #include <Kokkos_Core.hpp>
 
 
-const double dt = 0.01 ; 
-const double G = 1.0;
+  using integer = int ;
+  using real = float ;
+
+
 
 // to share with devices!!
+template <typename F, typename I>
 struct Setting {
-	double G = 1.0 ; 
-	double dt = 0.01;
-	int N = 1024 ; // number of bodies
-	int nrepeat = 100 ; // number of repeats of the test
-	int frames = 100;  // number of saved frames. Each frame execute nrepeat iterations !
+	F G = 1.0 ; 
+	F dt = 0.01;
+	I N = 1024 ; // number of bodies
+	I nrepeat = 100 ; // number of repeats of the test
+	I frames = 100;  // number of saved frames. Each frame execute nrepeat iterations !
 
 };
 
+template <typename F>
 struct Particle {
-	double x, y, z;
-	double vx, vy, vz;
-	double fx, fy, fz;
-	double mass ; 
+	F x, y, z;
+	F vx, vy, vz;
+	F fx, fy, fz;
+	F mass ; 
 };
 
+// why can't i use template for double ????????? 
+//void save_particles_to_file(const Kokkos::View<Particle<double>*>::HostMirror& particles, int n, int  frame_number) {
+void save_particles_to_file(const auto& particles, int n, int  frame_number) {
 
-void save_particles_to_file(const Kokkos::View<Particle*>::HostMirror particles, int n,  int frame_number) {
     std::string filename = "frames/frame_" + std::to_string(frame_number) + ".txt";
 
     std::ofstream file(filename);
@@ -59,25 +65,25 @@ void save_particles_to_file(const Kokkos::View<Particle*>::HostMirror particles,
 
 int main( int argc, char* argv[] )
 {
-  
-  Setting setting;
+
+  Setting<real, integer> setting;
 
   // Read command line arguments.
   for ( int i = 0; i < argc; i++ ) {
     if ( ( strcmp( argv[ i ], "-n" ) == 0 ) || ( strcmp( argv[ i ], "-N" ) == 0 ) ) {
-      setting.N = atoi( argv[++i]);
+      setting.N = static_cast<integer>(atoi( argv[++i]));
       printf( "  User N is %d\n", setting.N );
     }
     else if ( ( strcmp( argv[ i ], "-f" ) == 0 ) || ( strcmp( argv[ i ], "-F" ) == 0 ) ) {
-      setting.frames = atoi( argv[++i]);
+      setting.frames = static_cast<integer>(atoi( argv[++i]));
       printf( "  User frames is %d\n", setting.frames );
     }
     else if ( ( strcmp( argv[ i ], "-d" ) == 0 ) || ( strcmp( argv[ i ], "-D" ) == 0 ) ) {
-      setting.dt = atof( argv[++i]);
+      setting.dt = static_cast<real>(atof( argv[++i]));
       printf( "  User dt is %d\n", setting.dt );
     }
     else if ( strcmp( argv[ i ], "-nrepeat" ) == 0 ) {
-      setting.nrepeat = atoi( argv[ ++i ] );
+      setting.nrepeat = static_cast<integer>(atoi( argv[ ++i ] ));
     }
     else if ( ( strcmp( argv[ i ], "-h" ) == 0 ) || ( strcmp( argv[ i ], "-help" ) == 0 ) ) {
       printf( "  NBody Options:\n" );
@@ -96,8 +102,8 @@ int main( int argc, char* argv[] )
   {
 
   // Allocate y, x vectors and Matrix A on device.
-  typedef Kokkos::View<Setting*> ViewSetting ; 
-  typedef Kokkos::View<Particle*>   ViewVectorType;
+  typedef Kokkos::View<Setting<real, integer>*> ViewSetting ; 
+  typedef Kokkos::View<Particle<real>*>  ViewVectorType;
   ViewSetting sv("setting", 1);
   ViewVectorType p("p", setting.N);
 
@@ -108,7 +114,7 @@ int main( int argc, char* argv[] )
 
    std::random_device rd;  // Pour obtenir une graine unique
    std::mt19937 gen(rd()); // Mersenne Twister engine seeded with rd()
-   std::uniform_real_distribution<double> dis(0.0, 1.0);
+   std::uniform_real_distribution<real> dis(0.0, 1.0);
 
        std::cout << "value : " << dis(gen) << std::endl ;
 
@@ -144,13 +150,13 @@ for ( int frame = 0 ; frame < h_sv(0).frames; frame++){
   for ( int repeat = 0; repeat < h_sv(0).nrepeat; repeat++ ) {
 
       Kokkos::parallel_for("kernel", h_sv(0).N, KOKKOS_LAMBDA (int i){
-      double dx , dy , dz;
-      double dist, dist3, force;
+      real dx , dy , dz;
+      real dist, dist3, force;
       p(i).fx = 0.0 ; 
       p(i).fy = 0.0 ; 
       p(i).fz = 0.0 ; 
    
-      double eps = 1e-10;
+      real eps = 1e-10;
       for (int j = 0 ; j < sv(0).N ; j++){
       	if (i==j)
 		continue;
@@ -169,7 +175,7 @@ for ( int frame = 0 ; frame < h_sv(0).frames; frame++){
       });
       Kokkos::parallel_for("kernel2", h_sv(0).N, KOKKOS_LAMBDA (int i){
         // integration 
-	double mass = p(i).mass;
+	real mass = p(i).mass;
         p(i).vx += sv(0).dt * p(i).fx / mass ;
         p(i).vy += sv(0).dt * p(i).fy / mass ;
         p(i).vz += sv(0).dt * p(i).fz / mass ;
@@ -193,7 +199,7 @@ for ( int frame = 0 ; frame < h_sv(0).frames; frame++){
 // second method : we use a second array named fx and fy to store the intermediaire data and then launch a classic 1d parallel loop
   // Calculate time
   Kokkos::fence();
-  double time = timer.seconds();
+  real time = timer.seconds();
   std::cout << "Elapsed time : " << time << std::endl ; 
   }
   Kokkos::finalize();
