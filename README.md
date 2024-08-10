@@ -26,8 +26,13 @@ I Suggest you to read the Kokkos documentation if you want to compile with a spe
 
 
 # Usage
-You can currently launch the SOA version named `NBody_SOA` with `-n` particles and `-nrepeat` iterations like : 
+You can currently launch the SOA version named `NBody_SOA` with :
 ```
-./build/NBody_SOA -N 10240 -nrepeat 100
+./build/NBody_SOA -N 10240 -nrepeat 100 -f 100 -d 0.001
 ```
+With the following arguments : 
+- `-n` particles
+- `-nrepeat` iterations
+- `d` timestep
+- `f` frames - each frame consume `nrepeat` iterations and save the values in the `frames` directory
 
