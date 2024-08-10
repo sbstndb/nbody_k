@@ -6,6 +6,7 @@
 #include <cstring>
 #include <fstream>
 #include <string>
+#include <filesystem>
 #include <random>
 
 #include <Kokkos_Core.hpp>
@@ -37,10 +38,12 @@ struct Particle {
 
 // why can't i use template for double ????????? 
 //void save_particles_to_file(const Kokkos::View<Particle<double>*>::HostMirror& particles, int n, int  frame_number) {
-void save_particles_to_file(const auto& particles, int n, int  frame_number) {
+void save_particles_to_file(const auto& particles, auto n, auto frame_number) {
+
+	std::string directory = "frames";
+	std::filesystem::create_directories(directory);
 
 	std::string filename = "frames/frame_" + std::to_string(frame_number) + ".txt";
-
 	std::ofstream file(filename);
 
 	if (!file.is_open()) {
