@@ -36,3 +36,16 @@ With the following arguments :
 - `d` timestep
 - `f` frames - each frame consume `nrepeat` iterations and save the values in the `frames` directory
 
+# Todo 
+### To-Do List
+
+- [ ] Refactoring
+- [ ] Hierarchical parallelism with Kokkos
+- [ ] Shared memory kernels with scratch pads
+- [ ] Kokkos::SIMD usage
+- [ ] Barnes-Hut implementation
+- [ ] Fast Multipole Method (FMM) implementation
+- [ ] Add periodic boundary conditions
+- [ ] Python animation generator
+- [x] Set up the CMake build system
+- [x] Test the code on different backends (CUDA, OpenMP, Serial)
